@@ -1,151 +1,99 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Camera, Shield, Clock, Users } from "lucide-react";
+import { Camera, Users, Upload, Activity } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
-  const [isLoaded, setIsLoaded] = useState(true);
+  const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState<string | null>(null);
 
   const features = [
     {
       icon: <Camera className="w-6 h-6 text-primary" />,
-      title: "Facial Recognition",
-      description: "Advanced AI-powered facial recognition for accurate attendance tracking",
-    },
-    {
-      icon: <Shield className="w-6 h-6 text-primary" />,
-      title: "Secure & Private",
-      description: "Enterprise-grade security ensuring your data stays protected",
-    },
-    {
-      icon: <Clock className="w-6 h-6 text-primary" />,
-      title: "Real-time Tracking",
-      description: "Instant attendance updates and monitoring capabilities",
+      title: "Face Recognition",
+      description: "Advanced AI-powered face detection and recognition",
+      route: "/recognition"
     },
     {
       icon: <Users className="w-6 h-6 text-primary" />,
-      title: "Multiple Users",
-      description: "Support for large organizations with multiple departments",
+      title: "User Management",
+      description: "Register and manage users efficiently",
+      route: "/register"
     },
+    {
+      icon: <Upload className="w-6 h-6 text-primary" />,
+      title: "Bulk Upload",
+      description: "Import multiple users via Excel upload",
+      route: "/bulk-upload"
+    },
+    {
+      icon: <Activity className="w-6 h-6 text-primary" />,
+      title: "Attendance Logs",
+      description: "View and export attendance records",
+      route: "/logs"
+    }
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      {/* Hero Section */}
-      <section className="container px-4 pt-32 pb-20 mx-auto text-center">
-        <motion.div
+    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50">
+      <div className="container px-4 mx-auto">
+        {/* Hero Section */}
+        <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="max-w-3xl mx-auto space-y-6"
+          className="py-20 text-center"
         >
-          <span className="px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-full">
-            Next Generation Attendance System
+          <span className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-full">
+            Next Generation Face Recognition
           </span>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-6xl">
-            Face Recognition Attendance
-            <span className="block text-primary">Made Simple</span>
+          <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">
+            Smart Attendance System
+            <span className="block mt-2 text-primary">Made Simple</span>
           </h1>
-          <p className="text-lg text-gray-600">
+          <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
             Streamline your attendance management with our cutting-edge facial recognition system.
             Accurate, efficient, and completely hands-free.
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <button className="px-8 py-3 text-sm font-medium text-white transition-all rounded-lg bg-primary hover:bg-primary/90">
-              Get Started
-            </button>
-            <button className="px-8 py-3 text-sm font-medium transition-all border rounded-lg text-primary border-primary hover:bg-primary/10">
-              Learn More
-            </button>
-          </div>
-        </motion.div>
-      </section>
+        </motion.section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="container px-4 mx-auto">
-          <div className="max-w-3xl mx-auto mb-16 text-center">
-            <motion.h2
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-              className="mb-4 text-3xl font-bold"
-            >
-              Why Choose Our System?
-            </motion.h2>
-            <p className="text-lg text-gray-600">
-              Experience the future of attendance management with our comprehensive solution
-            </p>
-          </div>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+        {/* Features Grid */}
+        <section className="pb-20">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="p-6 transition-all rounded-2xl hover:shadow-lg hover:-translate-y-1"
+                onMouseEnter={() => setIsHovered(feature.title)}
+                onMouseLeave={() => setIsHovered(null)}
+                onClick={() => navigate(feature.route)}
+                className="relative p-6 glass-card rounded-2xl cursor-pointer group hover-scale"
               >
-                <div className="p-3 mb-4 rounded-lg w-fit bg-primary/10">
-                  {feature.icon}
+                <div className="flex flex-col items-center text-center gap-4">
+                  <div className="p-3 rounded-lg bg-primary/10">
+                    {feature.icon}
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-semibold">{feature.title}</h3>
+                    <p className="mt-2 text-gray-600">{feature.description}</p>
+                  </div>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{
+                      opacity: isHovered === feature.title ? 1 : 0,
+                      scale: isHovered === feature.title ? 1 : 0.8
+                    }}
+                    className="absolute inset-0 bg-primary/5 rounded-2xl"
+                  />
                 </div>
-                <h3 className="mb-2 text-xl font-semibold">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="container px-4 mx-auto">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-            className="max-w-3xl mx-auto mb-16 text-center"
-          >
-            <h2 className="mb-4 text-3xl font-bold">How It Works</h2>
-            <p className="text-lg text-gray-600">
-              Get started with our face recognition system in three simple steps
-            </p>
-          </motion.div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                step: "01",
-                title: "Register Users",
-                description: "Add users to the system with their facial data",
-              },
-              {
-                step: "02",
-                title: "Set Up Cameras",
-                description: "Connect your cameras to our secure system",
-              },
-              {
-                step: "03",
-                title: "Track Attendance",
-                description: "Automatically track and manage attendance records",
-              },
-            ].map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="p-6 bg-white rounded-2xl glass-card"
-              >
-                <span className="text-4xl font-bold text-primary/20">
-                  {item.step}
-                </span>
-                <h3 className="mt-4 mb-2 text-xl font-semibold">{item.title}</h3>
-                <p className="text-gray-600">{item.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 };

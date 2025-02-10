@@ -31,10 +31,22 @@ export default {
         primary: {
           DEFAULT: "#4ade80",
           foreground: "hsl(var(--primary-foreground))",
+          light: "#86efac",
+          dark: "#22c55e",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
+        },
+        success: {
+          light: "#86efac",
+          DEFAULT: "#22c55e",
+          dark: "#15803d",
+        },
+        warning: {
+          light: "#fcd34d",
+          DEFAULT: "#f59e0b",
+          dark: "#b45309",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -57,6 +69,11 @@ export default {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
       keyframes: {
         "fade-up": {
           "0%": {
@@ -78,10 +95,32 @@ export default {
             transform: "translateY(0)",
           },
         },
+        "slide-up-fade": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(16px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "scale-in": {
+          "0%": {
+            opacity: "0",
+            transform: "scale(0.95)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.5s ease-out",
         "fade-down": "fade-down 0.5s ease-out",
+        "slide-up-fade": "slide-up-fade 0.3s ease-out",
+        "scale-in": "scale-in 0.2s ease-out",
       },
     },
   },
