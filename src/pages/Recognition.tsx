@@ -128,7 +128,8 @@ const Recognition = () => {
         });
       } else {
         // Compare with stored descriptor for attendance
-        const storedDescriptor = new Float32Array(faceData.descriptor);
+        // Fixed: Convert stored descriptor array back to Float32Array
+        const storedDescriptor = new Float32Array(faceData.descriptor as number[]);
         const distance = faceapi.euclideanDistance(detections.descriptor, storedDescriptor);
         
         if (distance < 0.6) { // Threshold for face match
