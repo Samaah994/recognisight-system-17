@@ -10,6 +10,8 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Recognition from "./pages/Recognition";
 import UserManagement from "./pages/UserManagement";
+import BulkUpload from "./pages/BulkUpload";
+import AttendanceLogs from "./pages/AttendanceLogs";
 
 const queryClient = new QueryClient();
 
@@ -56,6 +58,22 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <UserManagement />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bulk-upload"
+              element={
+                <ProtectedRoute>
+                  <BulkUpload />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/logs"
+              element={
+                <ProtectedRoute>
+                  <AttendanceLogs />
                 </ProtectedRoute>
               }
             />
