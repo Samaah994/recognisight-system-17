@@ -19,7 +19,7 @@ const Index = () => {
       icon: <Users className="w-6 h-6 text-primary" />,
       title: "User Management",
       description: "Register and manage users efficiently",
-      route: "/register"
+      route: "/users"
     },
     {
       icon: <Upload className="w-6 h-6 text-primary" />,
