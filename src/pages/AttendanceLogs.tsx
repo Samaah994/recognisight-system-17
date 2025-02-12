@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -8,6 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Loader2, Download } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import * as XLSX from "xlsx";
 
 const AttendanceLogs = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());

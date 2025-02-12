@@ -6,6 +6,12 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from "xlsx";
 
+interface ExcelRow {
+  employee_id: string;
+  full_name: string;
+  department: string;
+}
+
 const BulkUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
@@ -22,13 +28,14 @@ const BulkUpload = () => {
         const workbook = XLSX.read(data, { type: "binary" });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
+        const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(sheet);
 
         for (const row of jsonData) {
           const { error } = await supabase.from("profiles").insert({
+            id: crypto.randomUUID(), // Generate a UUID for the id field
             employee_id: row.employee_id,
             full_name: row.full_name,
-            department: row.department.toUpperCase(),
+            department: row.department.toUpperCase() as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
           });
 
           if (error) throw error;
