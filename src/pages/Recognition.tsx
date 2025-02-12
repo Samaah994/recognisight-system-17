@@ -36,18 +36,25 @@ const Recognition = () => {
   useEffect(() => {
     const loadModels = async () => {
       try {
+        const MODEL_URL = "/models";
+        
+        // Log the model loading process
+        console.log("Loading face-api.js models...");
+        
         await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri("/models"),
-          faceapi.nets.faceLandmark68Net.loadFromUri("/models"),
-          faceapi.nets.faceRecognitionNet.loadFromUri("/models"),
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
         ]);
+        
+        console.log("Models loaded successfully!");
         setIsModelLoading(false);
       } catch (error) {
         console.error("Error loading models:", error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: "Failed to load face recognition models",
+          description: "Failed to load face recognition models. Please check if models are in the public/models directory.",
         });
       }
     };
@@ -128,7 +135,6 @@ const Recognition = () => {
         });
       } else {
         // Compare with stored descriptor for attendance
-        // Fixed: Convert stored descriptor array back to Float32Array
         const storedDescriptor = new Float32Array(faceData.descriptor as number[]);
         const distance = faceapi.euclideanDistance(detections.descriptor, storedDescriptor);
         
