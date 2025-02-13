@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -24,15 +24,50 @@ const Auth = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isModelsLoading, setIsModelsLoading] = useState(true);
+
+  // Load face-api models
+  useEffect(() => {
+    const loadModels = async () => {
+      try {
+        const MODEL_URL = "/models";
+        await Promise.all([
+          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        ]);
+        setIsModelsLoading(false);
+        console.log("Face-api models loaded successfully");
+      } catch (error) {
+        console.error("Error loading face-api models:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load face recognition models. Please check your internet connection.",
+        });
+      }
+    };
+    loadModels();
+  }, [toast]);
 
   const startCamera = async () => {
     try {
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ 
+        video: {
+          width: { ideal: 640 },
+          height: { ideal: 480 },
+          facingMode: "user"
+        } 
+      });
+      
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        // Ensure the video starts playing
+        await videoRef.current.play();
       }
       setStream(mediaStream);
       setIsCameraActive(true);
+      console.log("Camera started successfully");
     } catch (error) {
       console.error("Error accessing camera:", error);
       toast({
@@ -46,6 +81,9 @@ const Auth = () => {
   const stopCamera = () => {
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
+      if (videoRef.current) {
+        videoRef.current.srcObject = null;
+      }
       setStream(null);
       setIsCameraActive(false);
     }
@@ -225,9 +263,14 @@ const Auth = () => {
                       variant="outline"
                       className="w-full"
                       onClick={startCamera}
+                      disabled={isModelsLoading}
                     >
-                      <Camera className="w-4 h-4 mr-2" />
-                      Take a Picture
+                      {isModelsLoading ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4 mr-2" />
+                      )}
+                      {isModelsLoading ? "Loading models..." : "Take a Picture"}
                     </Button>
                   ) : (
                     <div className="space-y-4">
@@ -238,6 +281,7 @@ const Auth = () => {
                           playsInline
                           muted
                           className="w-full h-full object-cover"
+                          style={{ transform: 'scaleX(-1)' }} // Mirror the video feed
                         />
                       </div>
                       <Button
@@ -273,7 +317,12 @@ const Auth = () => {
           <Button
             type="button"
             variant="link"
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              if (isCameraActive) {
+                stopCamera();
+              }
+            }}
           >
             {isLogin
               ? "Don't have an account? Sign up"
