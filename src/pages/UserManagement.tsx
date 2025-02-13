@@ -1,15 +1,18 @@
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Check, X, Loader2, Home } from "lucide-react";
+import { Check, X, Loader2, Home, Search, UserPlus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const UserManagement = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: users, isLoading } = useQuery({
     queryKey: ["users"],
@@ -22,6 +25,15 @@ const UserManagement = () => {
       if (error) throw error;
       return data;
     },
+  });
+
+  const filteredUsers = users?.filter(user => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      user.employee_id.toLowerCase().includes(searchLower) ||
+      user.full_name.toLowerCase().includes(searchLower) ||
+      user.department.toLowerCase().includes(searchLower)
+    );
   });
 
   const markAttendance = async (userId: string, status: string) => {
@@ -66,8 +78,23 @@ const UserManagement = () => {
               <Home className="w-4 h-4 mr-2" />
               Back to Dashboard
             </Button>
-            <Button onClick={() => window.location.href = "/register"}>
+            <Button onClick={() => navigate("/register")}>
+              <UserPlus className="w-4 h-4 mr-2" />
               Add New User
+            </Button>
+          </div>
+        </div>
+
+        <div className="flex gap-4 mb-6">
+          <div className="flex-1 flex gap-2">
+            <Input
+              placeholder="Search by ID, name, or department..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="max-w-md"
+            />
+            <Button variant="outline">
+              <Search className="w-4 h-4" />
             </Button>
           </div>
         </div>
@@ -83,7 +110,7 @@ const UserManagement = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users?.map((user) => (
+              {filteredUsers?.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell>{user.employee_id}</TableCell>
                   <TableCell>{user.full_name}</TableCell>
@@ -119,3 +146,4 @@ const UserManagement = () => {
 };
 
 export default UserManagement;
+

@@ -1,9 +1,10 @@
 
 import { useState } from "react";
-import { Upload, FileUp, Loader2 } from "lucide-react";
+import { Upload, FileUp, Loader2, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 interface ExcelRow {
@@ -15,6 +16,7 @@ interface ExcelRow {
 const BulkUpload = () => {
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -32,7 +34,7 @@ const BulkUpload = () => {
 
         for (const row of jsonData) {
           const { error } = await supabase.from("profiles").insert({
-            id: crypto.randomUUID(), // Generate a UUID for the id field
+            id: crypto.randomUUID(),
             employee_id: row.employee_id,
             full_name: row.full_name,
             department: row.department.toUpperCase() as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
@@ -64,6 +66,10 @@ const BulkUpload = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Bulk Upload Users</h1>
+        <Button onClick={() => navigate("/")}>
+          <Home className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </Button>
       </div>
 
       <div className="max-w-xl mx-auto mt-8">
@@ -124,3 +130,4 @@ const BulkUpload = () => {
 };
 
 export default BulkUpload;
+
