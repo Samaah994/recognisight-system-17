@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -12,6 +11,7 @@ import Recognition from "./pages/Recognition";
 import UserManagement from "./pages/UserManagement";
 import BulkUpload from "./pages/BulkUpload";
 import AttendanceLogs from "./pages/AttendanceLogs";
+import Welcome from "./pages/Welcome";
 
 const queryClient = new QueryClient();
 
@@ -77,6 +77,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/welcome" element={<Welcome />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

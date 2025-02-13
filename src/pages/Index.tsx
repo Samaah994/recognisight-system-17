@@ -38,18 +38,14 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50/50">
       <div className="container px-4 mx-auto">
-        {/* Hero Section */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="py-20 text-center"
         >
-          <span className="inline-flex items-center gap-2 px-3 py-1 text-sm font-medium text-primary bg-primary/10 rounded-full">
-            Next Generation Face Recognition
-          </span>
           <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">
-            Smart Attendance System
+            Face Attendance System
             <span className="block mt-2 text-primary">Made Simple</span>
           </h1>
           <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
@@ -58,7 +54,6 @@ const Index = () => {
           </p>
         </motion.section>
 
-        {/* Features Grid */}
         <section className="pb-20">
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
