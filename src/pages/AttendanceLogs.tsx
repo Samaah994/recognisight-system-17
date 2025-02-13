@@ -1,16 +1,21 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
-import { Loader2, Download } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Download, Search, Home } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 const AttendanceLogs = () => {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [searchQuery, setSearchQuery] = useState("");
+  const navigate = useNavigate();
 
   const { data: logs, isLoading } = useQuery({
     queryKey: ["attendance-logs", format(selectedDate, "yyyy-MM")],
@@ -35,6 +40,14 @@ const AttendanceLogs = () => {
       if (error) throw error;
       return data;
     },
+  });
+
+  const filteredLogs = logs?.filter(log => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      log.profiles.employee_id.toLowerCase().includes(searchLower) ||
+      log.profiles.full_name.toLowerCase().includes(searchLower)
+    );
   });
 
   const prepareChartData = () => {
@@ -85,10 +98,30 @@ const AttendanceLogs = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold">Attendance Logs</h1>
-        <Button onClick={exportToExcel}>
-          <Download className="w-4 h-4 mr-2" />
-          Export to Excel
-        </Button>
+        <div className="flex gap-4">
+          <Button onClick={() => navigate("/")}>
+            <Home className="w-4 h-4 mr-2" />
+            Back to Dashboard
+          </Button>
+          <Button onClick={exportToExcel}>
+            <Download className="w-4 h-4 mr-2" />
+            Export to Excel
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex gap-4 mb-6">
+        <div className="flex-1 flex gap-2">
+          <Input
+            placeholder="Search by employee ID or name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="max-w-md"
+          />
+          <Button variant="outline">
+            <Search className="w-4 h-4" />
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -129,7 +162,7 @@ const AttendanceLogs = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {logs?.map((log) => (
+            {filteredLogs?.map((log) => (
               <TableRow key={log.id}>
                 <TableCell>{format(new Date(log.date), "MMM dd, yyyy")}</TableCell>
                 <TableCell>{log.profiles.employee_id}</TableCell>
