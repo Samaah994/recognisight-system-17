@@ -47,12 +47,12 @@ const Auth = () => {
         if (signUpError) throw signUpError;
 
         if (data.user) {
-          // Add user profile
+          // Add user profile with the correct department type
           const { error: profileError } = await supabase.from("profiles").insert({
             id: data.user.id,
             full_name: fullName,
             employee_id: employeeId,
-            department: department,
+            department: department as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
           });
           if (profileError) throw profileError;
 
