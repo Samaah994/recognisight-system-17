@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Upload, FileUp, Loader2, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
@@ -22,79 +22,91 @@ const BulkUpload = () => {
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsUploading(true);
-    try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: "binary" });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(sheet);
-
-        let successCount = 0;
-        let errorCount = 0;
-
-        for (const row of jsonData) {
-          try {
-            // Sign up user with Supabase Auth
-            const { data: authData, error: signUpError } = await supabase.auth.signUp({
-              email: row.email,
-              password: row.password,
-              options: {
-                data: {
-                  full_name: row.full_name,
-                  employee_id: row.employee_id,
-                  department: row.department.toUpperCase(),
-                },
-              },
-            });
-
-            if (signUpError) throw signUpError;
-
-            if (authData.user) {
-              // Create profile entry
-              const { error: profileError } = await supabase.from("profiles").insert({
-                id: authData.user.id,
-                full_name: row.full_name,
-                employee_id: row.employee_id,
-                department: row.department.toUpperCase() as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
-              });
-
-              if (profileError) throw profileError;
-
-              // Mark initial attendance
-              const { error: attendanceError } = await supabase.from("attendance").insert({
-                user_id: authData.user.id,
-                status: "PRESENT",
-                date: new Date().toISOString().split('T')[0],
-              });
-
-              if (attendanceError) throw attendanceError;
-
-              successCount++;
-            }
-          } catch (error) {
-            console.error("Error processing row:", row, error);
-            errorCount++;
-          }
-        }
-
-        toast({
-          title: "Upload Complete",
-          description: `Successfully processed ${successCount} users. ${errorCount} errors encountered.`,
-        });
-      };
-
-      reader.readAsBinaryString(file);
-    } catch (error) {
-      console.error("Error uploading users:", error);
+    if (!file) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to upload users",
+        description: "Please select a file",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(sheet);
+
+      let successCount = 0;
+      let errorCount = 0;
+
+      for (const row of jsonData) {
+        try {
+          // Validate required fields
+          if (!row.email || !row.password || !row.full_name || !row.employee_id || !row.department) {
+            throw new Error("Missing required fields");
+          }
+
+          // Sign up user with Supabase Auth
+          const { data: authData, error: signUpError } = await supabase.auth.signUp({
+            email: row.email,
+            password: row.password,
+            options: {
+              data: {
+                full_name: row.full_name,
+                employee_id: row.employee_id,
+                department: row.department.toUpperCase(),
+              },
+            },
+          });
+
+          if (signUpError) throw signUpError;
+
+          if (authData.user) {
+            // Create profile entry
+            const { error: profileError } = await supabase.from("profiles").insert({
+              id: authData.user.id,
+              full_name: row.full_name,
+              employee_id: row.employee_id,
+              department: row.department.toUpperCase() as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
+            });
+
+            if (profileError) throw profileError;
+
+            // Mark initial attendance
+            const { error: attendanceError } = await supabase.from("attendance").insert({
+              user_id: authData.user.id,
+              status: "PRESENT",
+              date: new Date().toISOString().split('T')[0],
+            });
+
+            if (attendanceError) throw attendanceError;
+
+            successCount++;
+          }
+        } catch (error: any) {
+          console.error("Error processing row:", row, error);
+          errorCount++;
+        }
+      }
+
+      toast({
+        title: "Upload Complete",
+        description: `Successfully processed ${successCount} users. ${errorCount} errors encountered.`,
+      });
+
+      // Reset the file input
+      event.target.value = '';
+
+    } catch (error: any) {
+      console.error("Error processing file:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to process Excel file",
       });
     } finally {
       setIsUploading(false);
@@ -122,28 +134,29 @@ const BulkUpload = () => {
               </p>
             </div>
             <div className="flex items-center space-x-2">
-              <label htmlFor="file-upload">
-                <Button disabled={isUploading}>
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <FileUp className="w-4 h-4 mr-2" />
-                      Select File
-                    </>
-                  )}
-                </Button>
+              <label className="cursor-pointer">
                 <input
-                  id="file-upload"
                   type="file"
                   className="hidden"
                   accept=".xlsx,.xls"
                   onChange={handleFileUpload}
                   disabled={isUploading}
                 />
+                <Button asChild disabled={isUploading}>
+                  <span>
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Uploading...
+                      </>
+                    ) : (
+                      <>
+                        <FileUp className="w-4 h-4 mr-2" />
+                        Select File
+                      </>
+                    )}
+                  </span>
+                </Button>
               </label>
             </div>
           </div>
