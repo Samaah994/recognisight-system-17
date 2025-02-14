@@ -8,8 +8,10 @@ import { useNavigate } from "react-router-dom";
 import * as XLSX from "xlsx";
 
 interface ExcelRow {
-  employee_id: string;
+  email: string;
+  password: string;
   full_name: string;
+  employee_id: string;
   department: string;
 }
 
@@ -32,20 +34,57 @@ const BulkUpload = () => {
         const sheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json<ExcelRow>(sheet);
 
-        for (const row of jsonData) {
-          const { error } = await supabase.from("profiles").insert({
-            id: crypto.randomUUID(),
-            employee_id: row.employee_id,
-            full_name: row.full_name,
-            department: row.department.toUpperCase() as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
-          });
+        let successCount = 0;
+        let errorCount = 0;
 
-          if (error) throw error;
+        for (const row of jsonData) {
+          try {
+            // Sign up user with Supabase Auth
+            const { data: authData, error: signUpError } = await supabase.auth.signUp({
+              email: row.email,
+              password: row.password,
+              options: {
+                data: {
+                  full_name: row.full_name,
+                  employee_id: row.employee_id,
+                  department: row.department.toUpperCase(),
+                },
+              },
+            });
+
+            if (signUpError) throw signUpError;
+
+            if (authData.user) {
+              // Create profile entry
+              const { error: profileError } = await supabase.from("profiles").insert({
+                id: authData.user.id,
+                full_name: row.full_name,
+                employee_id: row.employee_id,
+                department: row.department.toUpperCase() as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
+              });
+
+              if (profileError) throw profileError;
+
+              // Mark initial attendance
+              const { error: attendanceError } = await supabase.from("attendance").insert({
+                user_id: authData.user.id,
+                status: "PRESENT",
+                date: new Date().toISOString().split('T')[0],
+              });
+
+              if (attendanceError) throw attendanceError;
+
+              successCount++;
+            }
+          } catch (error) {
+            console.error("Error processing row:", row, error);
+            errorCount++;
+          }
         }
 
         toast({
-          title: "Success",
-          description: `Successfully uploaded ${jsonData.length} users`,
+          title: "Upload Complete",
+          description: `Successfully processed ${successCount} users. ${errorCount} errors encountered.`,
         });
       };
 
@@ -115,8 +154,10 @@ const BulkUpload = () => {
           <ul className="list-disc list-inside space-y-2 text-gray-600">
             <li>Prepare an Excel file with the following columns:
               <ul className="list-disc list-inside ml-4 mt-2">
-                <li>employee_id (required)</li>
+                <li>email (required)</li>
+                <li>password (required)</li>
                 <li>full_name (required)</li>
+                <li>employee_id (required)</li>
                 <li>department (required)</li>
               </ul>
             </li>
@@ -130,4 +171,3 @@ const BulkUpload = () => {
 };
 
 export default BulkUpload;
-
