@@ -32,7 +32,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        navigate("/");
+        navigate("/welcome"); // Changed this line to navigate to /welcome after sign in
       } else {
         const { error: signUpError, data } = await supabase.auth.signUp({
           email,
