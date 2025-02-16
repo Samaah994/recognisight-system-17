@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Users, Upload, Activity } from "lucide-react";
+import { Camera, Users, Upload, Activity } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
@@ -9,6 +9,12 @@ const Index = () => {
   const [isHovered, setIsHovered] = useState<string | null>(null);
 
   const features = [
+    {
+      icon: <Camera className="w-6 h-6 text-primary" />,
+      title: "Face Recognition",
+      description: "Advanced AI-powered face detection and recognition",
+      route: "/recognition"
+    },
     {
       icon: <Users className="w-6 h-6 text-primary" />,
       title: "User Management",
@@ -39,17 +45,17 @@ const Index = () => {
           className="py-20 text-center"
         >
           <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">
-            Attendance System
+            Face Attendance System
             <span className="block mt-2 text-primary">Made Simple</span>
           </h1>
           <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto">
-            Streamline your attendance management with our efficient system.
+            Streamline your attendance management with our cutting-edge facial recognition system.
             Accurate, efficient, and completely hands-free.
           </p>
         </motion.section>
 
         <section className="pb-20">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {features.map((feature, index) => (
               <motion.div
                 key={index}

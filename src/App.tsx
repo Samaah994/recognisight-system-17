@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,6 +7,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Recognition from "./pages/Recognition";
 import UserManagement from "./pages/UserManagement";
 import BulkUpload from "./pages/BulkUpload";
 import AttendanceLogs from "./pages/AttendanceLogs";
@@ -42,6 +42,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/recognition"
+              element={
+                <ProtectedRoute>
+                  <Recognition />
                 </ProtectedRoute>
               }
             />

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RegisterForm } from "@/components/auth/RegisterForm";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -19,6 +19,7 @@ const Auth = () => {
   const [fullName, setFullName] = useState("");
   const [employeeId, setEmployeeId] = useState("");
   const [department, setDepartment] = useState<string>("");
+  const [faceDescriptor, setFaceDescriptor] = useState<number[] | null>(null);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +32,7 @@ const Auth = () => {
           password,
         });
         if (error) throw error;
-        navigate("/welcome");
+        navigate("/welcome"); // Changed this line to navigate to /welcome after sign in
       } else {
         const { error: signUpError, data } = await supabase.auth.signUp({
           email,
@@ -46,23 +47,12 @@ const Auth = () => {
         });
         if (signUpError) throw signUpError;
 
-        if (data.user) {
-          // Add user profile with the correct department type
-          const { error: profileError } = await supabase.from("profiles").insert({
-            id: data.user.id,
-            full_name: fullName,
-            employee_id: employeeId,
-            department: department as "IT" | "HR" | "FINANCE" | "OPERATIONS" | "MARKETING" | "SALES" | "ADMIN",
-          });
-          if (profileError) throw profileError;
-
-          // Mark attendance as present
-          const { error: attendanceError } = await supabase.from("attendance").insert({
+        if (faceDescriptor && data.user) {
+          const { error: faceDataError } = await supabase.from("face_data").insert({
             user_id: data.user.id,
-            status: "PRESENT",
-            date: new Date().toISOString().split('T')[0],
+            descriptor: faceDescriptor,
           });
-          if (attendanceError) throw attendanceError;
+          if (faceDataError) throw faceDataError;
         }
 
         toast({
@@ -115,47 +105,15 @@ const Auth = () => {
               />
             </div>
             {!isLogin && (
-              <>
-                <div>
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    type="text"
-                    required
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Full Name"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="employeeId">Employee ID</Label>
-                  <Input
-                    id="employeeId"
-                    type="text"
-                    required
-                    value={employeeId}
-                    onChange={(e) => setEmployeeId(e.target.value)}
-                    placeholder="Employee ID"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="department">Department</Label>
-                  <Select required value={department} onValueChange={setDepartment}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select department" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="IT">IT</SelectItem>
-                      <SelectItem value="HR">HR</SelectItem>
-                      <SelectItem value="FINANCE">Finance</SelectItem>
-                      <SelectItem value="OPERATIONS">Operations</SelectItem>
-                      <SelectItem value="SALES">Sales</SelectItem>
-                      <SelectItem value="MARKETING">Marketing</SelectItem>
-                      <SelectItem value="ADMIN">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
+              <RegisterForm
+                fullName={fullName}
+                setFullName={setFullName}
+                employeeId={employeeId}
+                setEmployeeId={setEmployeeId}
+                department={department}
+                setDepartment={setDepartment}
+                onFaceCapture={setFaceDescriptor}
+              />
             )}
           </div>
 
